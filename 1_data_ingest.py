@@ -40,7 +40,7 @@ schema = StructType(
 )    
     
 telco_data = spark.read.csv(
-  "s3a://demo-aws-1/datalake/data/churn/WA_Fn-UseC_-Telco-Customer-Churn-.csv",
+  "s3a://demo-aws-2/datalake/data/churn/WA_Fn-UseC_-Telco-Customer-Churn-.csv",
   header=True,
   schema=schema,
   sep=',',
