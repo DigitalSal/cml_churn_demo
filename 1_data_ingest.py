@@ -5,12 +5,12 @@ from pyspark.sql.types import *
 spark = SparkSession\
     .builder\
     .appName("PythonSQL")\
-    .master("local[*]") \
+    .master("local[*]")\
     .getOrCreate()
 
-## Add the following config if you want to run on the k8s cluster and remove `local[*]`
+# Add the following config if you want to run on the k8s cluster and remove `local[*]`
 #    .config("spark.hadoop.fs.s3a.s3guard.ddb.region","us-east-1")\
-#    .config("spark.yarn.access.hadoopFileSystems","s3a://jfletcher-cdp-bucket/")\
+#    .config("spark.yarn.access.hadoopFileSystems","s3a://demo-aws-2//")\
     
 
 schema = StructType(
@@ -61,7 +61,8 @@ spark.sql("show databases").show()
 
 spark.sql("show tables in default").show()
 
-
+# this code is here to create the table in Hive used be the other parts of the project.
+# It has already been run
 #telco_data\
 #  .write.format("parquet")\
 #  .mode("overwrite")\

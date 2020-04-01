@@ -4,20 +4,10 @@ This is the CML port of the Refractor prototype which is part of the [Interpreta
 report from Cloudera Fast Forward Labs](https://clients.fastforwardlabs.com/ff06/report).
 
 ### Setup
-Start a Python 3 Session with at least 8GB of memory and __run the utils/setup.py code__.  This will create the minimum setup to use existing, pretrained models.
-
-You also need to Set your Workload Password.
-
-In CDP, click on your user name (bottom left), then click Profile, then click Set Workload Password.
-You can user your current password, but you might have to add a `!` to meet the requirements.
-For the envrionment, select `jfletcher-cdp-env`.
+To build the project artifacts, run the `0_build_projet.py` file in a python3 session.
 
 ### 1 Ingest Data
 Open `1_data_ingest.py` in a workbench: python3, 1 CPU, 2 GB.
-
-Change the hadoop principle to your user name. i.e. replace `jfletcher` in the file with your `trail21xx` user.
-
-`.config("spark.hadoop.yarn.resourcemanager.principal","jfletcher")\`
 
 Run the file. 
 
