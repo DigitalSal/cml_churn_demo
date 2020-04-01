@@ -3,8 +3,13 @@
 This is the CML port of the Refractor prototype which is part of the [Interpretability
 report from Cloudera Fast Forward Labs](https://clients.fastforwardlabs.com/ff06/report).
 
-### Setup
-To build the project artifacts, run the `0_build_projet.py` file in a python3 session.
+### Auto Deploy
+To build all the project artifacts, run the `0_build_projet.py` file in a python3 session. If you wish to do this manually, follow the steps below.
+
+### 0 Manual Setup
+At the start of the manual build process, you need to open a workbench and run
+`!pip3 install -r requirements.txt`
+
 
 ### 1 Ingest Data
 Open `1_data_ingest.py` in a workbench: python3, 1 CPU, 2 GB.
@@ -13,12 +18,14 @@ Run the file.
 
 
 ### 2 Explore Data
-Open a jupyter notebook at open the `2_data_exploration.ipynb` file
+Open a Jupyter Notebook session: python3, 1 CPU, 2 GB and open the `2_data_exploration.ipynb` file.
+
+At the top of the page click Cells > Run All
 
 ### 3 Train Models
-A model has been pre-trained and placed in the models directory.  
+A model has been pre-trained and placed in the models/test_model directory.  
 
-If you want to retrain the model run the 3_train_models.py code to train a new model.  
+If you want to retrain the model run the 3_train_models.py code in a pyton3 1 CPU, 2 GB session to train a new model.  
 
 The model artifact will be saved in the models directory named after the datestamp, dataset and algorithm (ie. 20191120T161757_ibm_linear). The default settings will create a linear regression model against the IBM telco dataset. However, the code is vary modular and can train multiple model types against essentially any tabular dataset (see below for details).  
 
