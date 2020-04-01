@@ -4,9 +4,12 @@ This is the CML port of the Refractor prototype which is part of the [Interpreta
 report from Cloudera Fast Forward Labs](https://clients.fastforwardlabs.com/ff06/report).
 
 ### Auto Deploy
-To build all the project artifacts, run the `0_build_projet.py` file in a python3 session. If you wish to do this manually, follow the steps below.
+To build all the project artifacts, run the `0_build_projet.py` file in a python3 session. 
 
-### 0 Manual Setup
+### Manual Setup
+If you wish to do this manually, follow the steps below.
+
+### 0 Install Requirements
 At the start of the manual build process, you need to open a workbench and run
 `!pip3 install -r requirements.txt`
 
