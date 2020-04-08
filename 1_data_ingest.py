@@ -37,10 +37,12 @@ schema = StructType(
     StructField("TotalCharges", DoubleType(), True),
     StructField("Churn", StringType(), True)
   ]
-)    
+)
+
+s3_bucket = os.environ['STORAGE']
     
 telco_data = spark.read.csv(
-  "s3a://demo-aws-2/datalake/data/churn/WA_Fn-UseC_-Telco-Customer-Churn-.csv",
+  "{}/datalake/data/churn/WA_Fn-UseC_-Telco-Customer-Churn-.csv".format(s3_bucket),
   header=True,
   schema=schema,
   sep=',',
