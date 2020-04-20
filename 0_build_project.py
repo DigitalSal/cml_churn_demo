@@ -4,8 +4,6 @@
 !pip3 install -r requirements.txt
 
 # Create the directories and upload data
-!hdfs dfs -mkdir -p s3a://demo-aws-2/datalake/data/churn/
-!hdfs dfs -copyFromLocal /home/cdsw/raw/WA_Fn-UseC_-Telco-Customer-Churn-.csv s3a://demo-aws-2/datalake/data/churn/WA_Fn-UseC_-Telco-Customer-Churn-.csv
 
 from utils.cmlapi import CMLApi
 from IPython.display import Javascript, HTML
@@ -27,31 +25,26 @@ USERNAME = os.getenv("CDSW_PROJECT_URL").split(
 API_KEY = os.getenv("CDSW_API_KEY") 
 PROJECT_NAME = os.getenv("CDSW_PROJECT")  
 
-
 # Instantiate API Wrapper
 cml = CMLApi(HOST, USERNAME, API_KEY, PROJECT_NAME)
 
-# Add the STORAGE environment variable.
+# set the S3 bucket variable
+try : 
+    s3_bucket=os.environ["STORAGE"]
+except:
+    tree = ET.parse('/etc/hadoop/conf/hive-site.xml')
+    root = tree.getroot()
+    
+    for prop in root.findall('property'):
+    if prop.find('name').text == "hive.metastore.warehouse.dir":
+        s3_bucket = "s3a://" + prop.find('value').text.split("/")[2]
+    storage_environment_params = {"STORAGE":s3_bucket}
+    storage_environment = cml.create_environment_variable(storage_environment_params)
+    os.environ["STORAGE"] = s3_bucket
 
 
-# import os
-# ENV_BUCKET="s3a://demo-aws-2"
-
-# try : 
-#   DL_s3bucket=os.environ["STORAGE"]+"/datalake/"
-# except KeyError: 
-#   DL_s3bucket=ENV_BUCKET
-#   os.environ["STORAGE"]=ENV_BUCKET+"/datalake/"
-
-tree = ET.parse('/etc/hadoop/conf/hive-site.xml')
-root = tree.getroot()
-  
-for prop in root.findall('property'):
-  if prop.find('name').text == "hive.metastore.warehouse.dir":
-    s3_bucket = "s3a://" + prop.find('value').text.split("/")[2]
-
-storage_environment_params = {"STORAGE":s3_bucket}
-storage_environment = cml.create_environment_variable(storage_environment_params)
+!hdfs dfs -mkdir -p $STORAGE/datalake/data/churn/
+!hdfs dfs -copyFromLocal /home/cdsw/raw/WA_Fn-UseC_-Telco-Customer-Churn-.csv $STORAGE/datalake/data/churn/WA_Fn-UseC_-Telco-Customer-Churn-.csv
 
 # Get User Details
 user_details = cml.get_user({})
