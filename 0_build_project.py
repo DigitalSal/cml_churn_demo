@@ -1,13 +1,21 @@
 ## Run this file to auto deploy the model, run a job and deploy the application.
 
+# Install the requirements
 !pip3 install -r requirements.txt
+
+# Create the directories and upload data
+!hdfs dfs -mkdir -p s3a://demo-aws-2/datalake/data/churn/
+!hdfs dfs -copyFromLocal /home/cdsw/raw/WA_Fn-UseC_-Telco-Customer-Churn-.csv s3a://demo-aws-2/datalake/data/churn/WA_Fn-UseC_-Telco-Customer-Churn-.csv
 
 from utils.cmlapi import CMLApi
 from IPython.display import Javascript, HTML
 import os
 import time
-
+import json
+import requests
+import xml.etree.ElementTree as ET
 import datetime
+
 run_time_suffix = datetime.datetime.now()
 run_time_suffix = run_time_suffix.strftime("%d%m%Y%H%M%S")
 
@@ -22,6 +30,28 @@ PROJECT_NAME = os.getenv("CDSW_PROJECT")
 
 # Instantiate API Wrapper
 cml = CMLApi(HOST, USERNAME, API_KEY, PROJECT_NAME)
+
+# Add the STORAGE environment variable.
+
+
+# import os
+# ENV_BUCKET="s3a://demo-aws-2"
+
+# try : 
+#   DL_s3bucket=os.environ["STORAGE"]+"/datalake/"
+# except KeyError: 
+#   DL_s3bucket=ENV_BUCKET
+#   os.environ["STORAGE"]=ENV_BUCKET+"/datalake/"
+
+tree = ET.parse('/etc/hadoop/conf/hive-site.xml')
+root = tree.getroot()
+  
+for prop in root.findall('property'):
+  if prop.find('name').text == "hive.metastore.warehouse.dir":
+    s3_bucket = "s3a://" + prop.find('value').text.split("/")[2]
+
+storage_environment_params = {"STORAGE":s3_bucket}
+storage_environment = cml.create_environment_variable(storage_environment_params)
 
 # Get User Details
 user_details = cml.get_user({})
@@ -82,29 +112,48 @@ print("Job started")
 
 # Run experiment
 
-#run_experiment_params = {
-#    "size": {
-#        "id": 1,
-#        "description": "1 vCPU / 2 GiB Memory",
-#        "cpu": 1,
-#        "memory": 2,
-#        "route": "engine-profiles",
-#        "reqParams": None,
-#        "parentResource": {
-#            "route": "site",
-#            "parentResource": None
-#        },
-#        "restangularCollection": False
-#    },
-#    "script": "3_train_models.py",
-#    "arguments": "linear telco",
-#    "kernel": "python3",
-#    "cpu": 1,
-#    "memory": 2,
-#    "project": str(project_id)
-#}
+run_experiment_params = {
+    "size": {
+        "id": 1,
+        "description": "1 vCPU / 2 GiB Memory",
+        "cpu": 1,
+        "memory": 2,
+        "route": "engine-profiles",
+        "reqParams": None,
+        "parentResource": {
+            "route": "site",
+            "parentResource": None
+        },
+        "restangularCollection": False
+    },
+    "script": "3_train_models.py",
+    "arguments": "linear telco",
+    "kernel": "python3",
+    "cpu": 1,
+    "memory": 2,
+    "project": str(project_id)
+}
 #
 #cml.run_experiment(run_experiment_params)
+
+#{"size":{"id":1,"description":"1 vCPU / 2 GiB Memory","cpu":1,"memory":2,"route":"engine-profiles","reqParams":null,"parentResource":{"route":"site","parentResource":null},"restangularCollection":false},"script":"3_train_models.py","arguments":"linear telco","kernel":"python3","cpu":1,"memory":2,"project":"212"}
+
+run_params = {"username":"jfletcher","size":{"id":1,"description":"1 vCPU / 2 GiB Memory","cpu":1,"memory":2,"route":"engine-profiles","reqParams":"null","parentResource":{"route":"site","parentResource":"null"},"restangularCollection":"false"},"script":"3_train_models.py","arguments":"linear telco","kernel":"python3","cpu":1,"memory":2,"project":"212"}
+
+def run_experiment(params):
+    res = requests.post(
+        "http://ml-e493d729-039.demo-aws.ylcu-atmi.cloudera.site/api/altus-ds-1/ds/run",
+        headers={"Content-Type": "application/json"},
+        auth=("d06k1unrmxo9kq8gizimfn8kwa2t3xxl", ""),
+        data=json.dumps(run_params)
+    )
+    response = res.status_code
+    if (res.status_code != 201):
+        logging.error(response["message"])
+        logging.error(response)
+    else:
+        logging.debug("Experiment Run Started")
+    return response
 
 # Get Default Engine Details
 default_engine_details = cml.default_engine({})

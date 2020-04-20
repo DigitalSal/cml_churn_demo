@@ -125,6 +125,22 @@ class CMLApi:
         else:
             logging.debug("Job created")
         return response
+      
+    def create_environment_variable(self, params):
+        create_job_endpoint = "/".join([self.host, "api/v1/projects",
+                                        self.username, self.project_name, "environment"])
+        res = requests.put(
+            create_job_endpoint,
+            headers={"Content-Type": "application/json"},
+            auth=(self.api_key, ""),
+            data=json.dumps(params)
+        )
+        #response = res.json()
+        if (res.status_code != 204):
+            logging.error("Repons code was " + res.status_code)
+        else:
+            logging.debug("Environment variable created")
+        return res.status_code
 
     def start_job(self, job_id, params):
         start_job_endpoint = "/".join([self.host, "api/v1/projects",
@@ -136,9 +152,9 @@ class CMLApi:
             data=json.dumps(params)
         )
 
-        response = res.json()
-        if (res.status_code != 200):
-            logging.error(response["message"])
+        response = res.text
+        if (res.status_code != 201):
+            logging.error(response)
             logging.error(response)
         else:
             logging.debug(">> Job started")
@@ -157,7 +173,7 @@ class CMLApi:
 
         response = res.json()
         logging.error(response)
-        if (res.status_code != 200):
+        if (res.status_code != 201):
             logging.error(response["message"])
             logging.error(response)
         else:
@@ -279,21 +295,21 @@ class CMLApi:
 
         return response
       
-    def run_expermiment(self, params):
-        create_model_endpoint = "/".join([self.host,
-                                          "api/altus-ds-1", "ds", "run"])
-        res = requests.post(
-            create_model_endpoint,
-            headers={"Content-Type": "application/json"},
-            auth=(self.api_key, ""),
-            data=json.dumps(params)
-        )
-
-        response = res.json()
-        if (res.status_code != 200):
-            logging.error(response["message"])
-            logging.error(response)
-        else:
-            logging.debug(">> Model created")
-
-        return response
+#    def run_expermiment(self, params):
+#        create_model_endpoint = "/".join([self.host,
+#                                          "api/altus-ds-1", "ds", "run"])
+#        res = requests.post(
+#            create_model_endpoint,
+#            headers={"Content-Type": "application/json"},
+#            auth=(self.api_key, ""),
+#            data=json.dumps(params)
+#        )
+#
+#        response = res.json()
+#        if (res.status_code != 200):
+#            logging.error(response["message"])
+#            logging.error(response)
+#        else:
+#            logging.debug(">> Model created")
+#
+#        return response
