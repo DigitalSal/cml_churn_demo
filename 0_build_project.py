@@ -30,17 +30,17 @@ cml = CMLApi(HOST, USERNAME, API_KEY, PROJECT_NAME)
 
 # set the S3 bucket variable
 try : 
-    s3_bucket=os.environ["STORAGE"]
+  s3_bucket=os.environ["STORAGE"]
 except:
-    tree = ET.parse('/etc/hadoop/conf/hive-site.xml')
-    root = tree.getroot()
+  tree = ET.parse('/etc/hadoop/conf/hive-site.xml')
+  root = tree.getroot()
     
-    for prop in root.findall('property'):
+  for prop in root.findall('property'):
     if prop.find('name').text == "hive.metastore.warehouse.dir":
-        s3_bucket = "s3a://" + prop.find('value').text.split("/")[2]
-    storage_environment_params = {"STORAGE":s3_bucket}
-    storage_environment = cml.create_environment_variable(storage_environment_params)
-    os.environ["STORAGE"] = s3_bucket
+      s3_bucket = "s3a://" + prop.find('value').text.split("/")[2]
+  storage_environment_params = {"STORAGE":s3_bucket}
+  storage_environment = cml.create_environment_variable(storage_environment_params)
+  os.environ["STORAGE"] = s3_bucket
 
 
 !hdfs dfs -mkdir -p $STORAGE/datalake/data/churn/
