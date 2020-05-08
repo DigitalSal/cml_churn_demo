@@ -183,6 +183,8 @@ model_id = new_model_details["id"]
 
 print("New model created with access key", access_key)
 
+cml.set_model_auth({"id": model_id, "enableAuth": False})
+
 #Wait for the model to deploy.
 is_deployed = False
 while is_deployed == False:

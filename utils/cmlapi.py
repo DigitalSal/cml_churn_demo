@@ -236,7 +236,24 @@ class CMLApi:
         else:
             logging.debug(">> Listing models")
 
-        return response      
+        return response  
+      
+    def set_model_auth(self,params):
+        create_model_endpoint = "/".join([self.host,
+                                          "api/altus-ds-1", "models", "set-model-auth"])
+        res = requests.post(
+            create_model_endpoint,
+            headers={"Content-Type": "application/json"},
+            auth=(self.api_key, ""),
+            data=json.dumps(params)
+        )
+        response = res.json()
+        if (res.status_code != 200):
+            logging.error(response["message"])
+            logging.error(response)
+        else:
+            logging.debug(">> Set Model Auth")
+        return response
 
     def create_application(self, params):
         create_application_endpoint = "/".join([self.host, "api/v1/projects",
