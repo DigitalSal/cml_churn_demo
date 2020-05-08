@@ -254,6 +254,25 @@ class CMLApi:
         else:
             logging.debug(">> Set Model Auth")
         return response
+      
+    def create_model_api_key():
+        create_model_endpoint = "/".join([self.host, "api/v1/users",
+                                                self.username, "modelapikey"])
+        res = requests.post(
+            create_model_endpoint,
+            headers={"Content-Type": "application/json"},
+            auth=(self.api_key, ""),
+            data=json.dumps({"expiryDate": "2021-05-08T11:47:04.362Z"})
+        )
+        
+        response = res.json()
+        if (res.status_code != 201):
+            logging.error(response["message"])
+            logging.error(response)
+        else:
+            logging.debug(">> Model api created")
+        return response 
+      
 
     def create_application(self, params):
         create_application_endpoint = "/".join([self.host, "api/v1/projects",
