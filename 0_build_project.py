@@ -14,6 +14,15 @@ import requests
 import xml.etree.ElementTree as ET
 import datetime
 
+# Import SparkSQL for making tables for Atlas Integration
+from pyspark.sql import SparkSession
+from pyspark.sql.types import *
+spark = SparkSession\
+    .builder\
+    .appName("PythonSQL")\
+    .master("local[*]")\
+    .getOrCreate()
+
 run_time_suffix = datetime.datetime.now()
 run_time_suffix = run_time_suffix.strftime("%d%m%Y%H%M%S")
 
@@ -61,7 +70,7 @@ project_details = cml.get_project({})
 project_id = project_details["id"]
 
 
-# Create Job
+# Create Training Job
 create_jobs_params = {"name": "Train Model " + run_time_suffix,
                       "type": "manual",
                       "script": "3_train_models.py",
@@ -93,12 +102,12 @@ new_job_id = new_job["id"]
 print("Created new job with jobid", new_job_id)
 
 ##
-# Start a job
+# Start the Training Job
 job_env_params = {}
 start_job_params = {"environment": job_env_params}
 job_id = new_job_id
 job_status = cml.start_job(job_id, start_job_params)
-print("Job started")
+print("Training Job started")
 
 # Stop a job
 #job_dict = cml.start_job(job_id, start_job_params)
@@ -153,6 +162,58 @@ def run_experiment(params):
 default_engine_details = cml.get_default_engine({})
 default_engine_image_id = default_engine_details["id"]
 
+spark.sql("CREATE DATABASE IF NOT EXISTS telco_churn").show()
+
+create_table_statement = '''CREATE TABLE IF NOT EXISTS telco_churn.historical_data (
+  customerID STRING, 
+  gender STRING, 
+  SeniorCitizen STRING, 
+  Partner STRING, 
+  Dependents STRING, 
+  tenure DOUBLE, 
+  PhoneService STRING, 
+  MultipleLines STRING, 
+  InternetService STRING,
+  OnlineSecurity STRING, 
+  OnlineBackup STRING, 
+  DevbiceProtection STRING, 
+  TechSupport STRING, 
+  StreamingTV STRING, 
+  StreamingMovies STRING, 
+  Contract STRING, 
+  PaperlessBilling STRING, 
+  PaymentMethod STRING, 
+  MontlyCharges DOUBLE,
+  TotalCharges  DOUBLE,
+  Churn STRING)'''
+
+create_view_statement = '''CREATE TABLE IF NOT EXISTS telco_churn.training_data AS 
+SELECT customerID, 
+  SeniorCitizen, 
+  Partner, 
+  Dependents, 
+  tenure, 
+  PhoneService, 
+  MultipleLines, 
+  InternetService, 
+  OnlineSecurity, 
+  OnlineBackup, 
+  DevbiceProtection, 
+  TechSupport, 
+  StreamingTV, 
+  StreamingMovies, 
+  Contract, 
+  PaperlessBilling, 
+  PaymentMethod, 
+  MontlyCharges,
+  TotalCharges,
+  Churn
+FROM telco_churn.historical_data'''
+
+spark.sql(create_table_statement).show()
+# TODO: this often fails with permissions problems. Should be used to show more lineage. 
+# spark.sql(create_view_statement).show()
+
 # Create Model
 example_model_input = {"StreamingTV": "No", "MonthlyCharges": 70.35, "PhoneService": "No", "PaperlessBilling": "No", "Partner": "No", "OnlineBackup": "No", "gender": "Female", "Contract": "Month-to-month", "TotalCharges": 1397.475,
                        "StreamingMovies": "No", "DeviceProtection": "No", "PaymentMethod": "Bank transfer (automatic)", "tenure": 29, "Dependents": "No", "OnlineSecurity": "No", "MultipleLines": "No", "InternetService": "DSL", "SeniorCitizen": "No", "TechSupport": "No"}
@@ -178,6 +239,9 @@ create_model_params = {
     "replicationPolicy": {"type": "fixed", "numReplicas": 1},
     "environment": {}}
 
+# Complete our YAML file
+!echo -e "\"Model Explainer $run_time_suffix\":\n"$(cat lineage.yml)" > lineage.yml
+
 new_model_details = cml.create_model(create_model_params)
 access_key = new_model_details["accessKey"]  # todo check for bad response
 model_id = new_model_details["id"]
@@ -201,6 +265,52 @@ while is_deployed == False:
 # Change the line in the flask/single_view.html file.
 import subprocess
 subprocess.call(["sed", "-i",  's/const\saccessKey.*/const accessKey = "' + access_key + '";/', "/home/cdsw/flask/single_view.html"])
+
+# Create Accuracy Job
+create_calc_jobs_params = {"name": "Calculate Accuracy " + run_time_suffix,
+                      "type": "manual",
+                      "script": "6_calculate_accuracy.py",
+                      "timezone": "America/Los_Angeles",
+                      "environment": {},
+                      "kernel": "python3",
+                      "cpu": 1,
+                      "memory": 2,
+                      "nvidia_gpu": 0,
+                      "include_logs": True,
+                      "notifications": [
+                          {"user_id": user_obj["id"],
+                           "user":  user_obj,
+                           "success": False, "failure": False, "timeout": False, "stopped": False
+                           }
+                      ],
+                      "recipients": {},
+                      "attachments": [],
+                      "include_logs": True,
+                      "report_attachments": [],
+                      "success_recipients": [],
+                      "failure_recipients": [],
+                      "timeout_recipients": [],
+                      "stopped_recipients": []
+                      }
+
+new_calc_job = cml.create_job(create_jobs_calc_params)
+new_calc_job_id = new_calc_job["id"]
+print("Created new job with jobid", new_job_calc_id)
+
+##
+# Start the accuracy job
+job_calc_env_params = {}
+start_job_calc_params = {"environment": job_env_params}
+job_calc_id = new_job_calc_id
+job_calc_status = cml.start_job(job_calc_id, start_job_calc_params)
+print("Accuracy Job Started")
+
+# Do it again for two data points for the graph
+job_calc_env_params = {}
+start_job_calc_params = {"environment": job_env_params}
+job_calc_id = new_job_calc_id
+job_calc_status = cml.start_job(job_calc_id, start_job_calc_params)
+print("Accuracy Job Started")
 
 # Create Application
 create_application_params = {
