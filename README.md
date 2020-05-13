@@ -75,3 +75,26 @@ After the Application deploys, click on the blue-arrow next to the name.  The in
 
 Clicking on any single row will show a "local" interpretabilty of a particular instance.  Here you 
 can see how adjusting any one of the features will change the instance's churn prediction.  
+
+### 6 Calculate Accuracy
+Create a Job to show regular calculation of the model's accuracy
+
+Replace the CRN with the deployment CRN number from the monitoring tab
+
+[crn]: https://github.com/adam-p/markdown-here/raw/master/src/common/images/icon48.png
+
+Go to the **Jobs** section and select "New Job" with the following:
+* **Name**: Calculate Accuracy
+* **Script**: 6_calculate_accuracy.py
+* **Schedule**: Manual
+* **Kernel**: Python 3
+* **Engine Profile**: 1vCPU / 2 GiB Memory
+
+Run the script a few times to accuracy info stored in the metrics store
+
+### 7 Analyze Metrics
+Run custom python to analyze metrics from our metrics store
+
+Open 7_analyze_metrics.py and replace the CRN with the deployed model from the Monitoring tab.
+
+Run the python script.

@@ -73,3 +73,58 @@ spark.sql("show tables in default").show()
 #)
 
 spark.sql("select * from default.telco_churn").show()
+
+
+# Create Metadata for Atlas integration
+# TODO: This can likely be replaced with an improvement on the above
+
+spark.sql("CREATE DATABASE IF NOT EXISTS telco_churn").show()
+
+create_table_statement = '''CREATE TABLE IF NOT EXISTS telco_churn.historical_data (
+  customerID STRING, 
+  gender STRING, 
+  SeniorCitizen STRING, 
+  Partner STRING, 
+  Dependents STRING, 
+  tenure DOUBLE, 
+  PhoneService STRING, 
+  MultipleLines STRING, 
+  InternetService STRING,
+  OnlineSecurity STRING, 
+  OnlineBackup STRING, 
+  DevbiceProtection STRING, 
+  TechSupport STRING, 
+  StreamingTV STRING, 
+  StreamingMovies STRING, 
+  Contract STRING, 
+  PaperlessBilling STRING, 
+  PaymentMethod STRING, 
+  MontlyCharges DOUBLE,
+  TotalCharges  DOUBLE,
+  Churn STRING)'''
+
+create_view_statement = '''CREATE TABLE IF NOT EXISTS telco_churn.training_data AS 
+SELECT customerID, 
+  SeniorCitizen, 
+  Partner, 
+  Dependents, 
+  tenure, 
+  PhoneService, 
+  MultipleLines, 
+  InternetService, 
+  OnlineSecurity, 
+  OnlineBackup, 
+  DevbiceProtection, 
+  TechSupport, 
+  StreamingTV, 
+  StreamingMovies, 
+  Contract, 
+  PaperlessBilling, 
+  PaymentMethod, 
+  MontlyCharges,
+  TotalCharges,
+  Churn
+FROM telco_churn.historical_data'''
+
+spark.sql(create_table_statement).show()
+spark.sql(create_view_statement).show()
