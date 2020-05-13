@@ -5,7 +5,7 @@
 
 # Create the directories and upload data
 
-from utils.cmlapi import CMLApi
+from cmlbootstrap import CMLBootstrap
 from IPython.display import Javascript, HTML
 import os
 import time
@@ -26,7 +26,7 @@ API_KEY = os.getenv("CDSW_API_KEY")
 PROJECT_NAME = os.getenv("CDSW_PROJECT")  
 
 # Instantiate API Wrapper
-cml = CMLApi(HOST, USERNAME, API_KEY, PROJECT_NAME)
+cml = CMLBootstrap(HOST, USERNAME, API_KEY, PROJECT_NAME)
 
 # set the S3 bucket variable
 try : 
@@ -150,7 +150,7 @@ def run_experiment(params):
     return response
 
 # Get Default Engine Details
-default_engine_details = cml.default_engine({})
+default_engine_details = cml.get_default_engine({})
 default_engine_image_id = default_engine_details["id"]
 
 # Create Model
@@ -162,6 +162,7 @@ create_model_params = {
     "name": "Model Explainer " + run_time_suffix,
     "description": "Explain a given model prediction",
     "visibility": "private",
+    "enableAuth": False,
     "targetFilePath": "4_model_serve_explainer.py",
     "targetFunctionName": "explain",
     "engineImageId": default_engine_image_id,
@@ -223,7 +224,7 @@ print("Application created, deploying at ", application_url)
 is_deployed = False
 while is_deployed == False:
 #Wait for the application to deploy.
-  app = cml.get_application({},str(application_id))
+  app = cml.get_application(str(application_id),{})
   if app["status"] == 'running':
     print("Application is deployed")
     break

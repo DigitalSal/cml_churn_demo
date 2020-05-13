@@ -75,17 +75,3 @@ After the Application deploys, click on the blue-arrow next to the name.  The in
 
 Clicking on any single row will show a "local" interpretabilty of a particular instance.  Here you 
 can see how adjusting any one of the features will change the instance's churn prediction.  
-
-
-** Don't forget** to stop your Models and Experiments once you are done to save resources for your colleagues.  
-
-
-## Additional options
-By default this code trains a linear regression model against the IBM dataset.  
-There are other datasets and other model types as well.  Set the Project environment variables to try other datasets and models:  
-Name              Value  
-CHURN_DATASET     telco (default) | ibm | breastcancer | iris  
-CHURN_MODEL_TYPE  linear (default) | gb | nonlinear | voting  
-
-
-**NOTE** that not all of these options have been fully tested so your mileage may vary.
