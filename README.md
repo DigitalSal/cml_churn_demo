@@ -77,6 +77,9 @@ Clicking on any single row will show a "local" interpretabilty of a particular i
 can see how adjusting any one of the features will change the instance's churn prediction.  
 
 ### 6 Calculate Accuracy
+
+Ensure a `CDSW_USER_API_KEY` environment variable with your user api key (main settings on the home screen) is defined for the project.
+
 Create a Job to show regular calculation of the model's accuracy
 
 Replace the CRN with the deployment CRN number from the monitoring tab
@@ -93,6 +96,8 @@ Go to the **Jobs** section and select "New Job" with the following:
 Run the script a few times to accuracy info stored in the metrics store
 
 ### 7 Analyze Metrics
+Ensure a `CDSW_USER_API_KEY` environment variable with your user api key (main settings on the home screen) is defined for the project.
+
 Run custom python to analyze metrics from our metrics store
 
 Open 7_analyze_metrics.py and replace the CRN with the deployed model from the Monitoring tab.
