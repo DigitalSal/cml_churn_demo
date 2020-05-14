@@ -114,7 +114,6 @@ print("Training Job started")
 #cml.stop_job(job_id, start_job_params)
 
 # Run experiment
-
 run_experiment_params = {
     "size": {
         "id": 1,
@@ -293,9 +292,9 @@ create_calc_jobs_params = {"name": "Calculate Accuracy " + run_time_suffix,
                       "stopped_recipients": []
                       }
 
-new_calc_job = cml.create_job(create_jobs_calc_params)
+new_calc_job = cml.create_job(create_calc_jobs_params)
 new_calc_job_id = new_calc_job["id"]
-print("Created new job with jobid", new_job_calc_id)
+print("Created new job with jobid", new_calc_job_id)
 
 ##
 # Start the accuracy job
@@ -303,14 +302,14 @@ job_calc_env_params = {}
 start_job_calc_params = {"environment": job_env_params}
 job_calc_id = new_job_calc_id
 job_calc_status = cml.start_job(job_calc_id, start_job_calc_params)
-print("Accuracy Job Started")
+print("Accuracy Job 1 Started")
 
 # Do it again for two data points for the graph
 job_calc_env_params = {}
 start_job_calc_params = {"environment": job_env_params}
 job_calc_id = new_job_calc_id
 job_calc_status = cml.start_job(job_calc_id, start_job_calc_params)
-print("Accuracy Job Started")
+print("Accuracy Job 2 Started")
 
 # Create Application
 create_application_params = {
