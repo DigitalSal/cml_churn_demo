@@ -16,7 +16,7 @@
     </div>
     <div id='features' style='clear:both;'></div>
     <script>
-        const accessKey = "mqmjhajwas5d6zk7xeqgzdxm2a5uhdin";
+        const accessKey = "m321vuo2tffjgd0behaaw47aaxd3flvi";
         in_url = new URL(window.location.href)
         out_url = new URL(window.location.origin + window.location.pathname)
 
@@ -57,18 +57,18 @@
             });
 
         Promise.all([features_numeric, features_categorical, dataset]).then(values => {
-            _.each(JSON.parse(values[2].response).data, function (value, key) {
+            _.each(values[2].response.data, function (value, key) {
                 out_url.searchParams.set(key, value)
             })
             //metadata = values;
             var features_all = _.merge(values[0], values[1]);
-            var merged_data = _.map(d3.entries(JSON.parse(values[2].response).data), function (e) {
+            var merged_data = _.map(d3.entries(values[2].response.data), function (e) {
                 return _.concat([{
                     key: e.key
                 }, {
                     value: e.value
                 }, {
-                    explanation: JSON.parse(values[2].response).explanation[e.key]
+                    explanation: values[2].response.explanation[e.key]
                 }], d3.entries(features_all[e.key]))
             });
             merged_data = _.map(merged_data, function (d) {
@@ -78,8 +78,8 @@
             })
 
             var prediction_value = d3.select("#pred_value")
-                .text(JSON.parse(values[2].response).probability.toFixed(3))
-                .attr("style","background:" + color(JSON.parse(values[2].response).probability) +";padding:10px;");
+                .text(values[2].response.probability.toFixed(3))
+                .attr("style","background:" + color(values[2].response.probability) +";padding:10px;");
 
             var main_divs = d3.select("#features").selectAll(".main_div")
                 .data(merged_data)

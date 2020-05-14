@@ -65,11 +65,14 @@ spark.sql("show tables in default").show()
 
 # this code is here to create the table in Hive used be the other parts of the project.
 # It has already been run
-#telco_data\
-#  .write.format("parquet")\
-#  .mode("overwrite")\
-#  .saveAsTable(
-#    'default.telco_churn'
-#)
+
+if ('telco_churn' not in list(spark.sql("show tables in default").toPandas()['tableName'])):
+  print("creating the telco_churn database")
+  telco_data\
+    .write.format("parquet")\
+    .mode("overwrite")\
+    .saveAsTable(
+      'default.telco_churn'
+  )
 
 spark.sql("select * from default.telco_churn").show()
