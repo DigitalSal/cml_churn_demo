@@ -305,7 +305,7 @@ new_calc_job = cml.create_job(create_calc_jobs_params)
 new_calc_job_id = new_calc_job["id"]
 print("Created new job with jobid", new_calc_job_id)
 
-sleep(10) # seems to blow up the first run most of the time
+time.sleep(10) # seems to blow up the first run most of the time
 
 # Start the accuracy job
 job_calc_env_params = {}
