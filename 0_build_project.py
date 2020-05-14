@@ -300,14 +300,14 @@ print("Created new job with jobid", new_calc_job_id)
 # Start the accuracy job
 job_calc_env_params = {}
 start_job_calc_params = {"environment": job_env_params}
-job_calc_id = new_job_calc_id
+job_calc_id = new_calc_job_id
 job_calc_status = cml.start_job(job_calc_id, start_job_calc_params)
 print("Accuracy Job 1 Started")
 
 # Do it again for two data points for the graph
 job_calc_env_params = {}
 start_job_calc_params = {"environment": job_env_params}
-job_calc_id = new_job_calc_id
+job_calc_id = new_calc_job_id
 job_calc_status = cml.start_job(job_calc_id, start_job_calc_params)
 print("Accuracy Job 2 Started")
 
