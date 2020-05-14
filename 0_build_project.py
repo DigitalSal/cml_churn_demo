@@ -242,7 +242,7 @@ create_model_params = {
 yaml_text = \
 """Model Explainer {}":
   hive_table_qualified_names:                # this is a predefined key to link to training data
-    - "telco_churn.training_data@cm"         # the qualifiedName of the hive_table object representing                
+    - "telco_churn.historical_data@cm"         # the qualifiedName of the hive_table object representing                
   metadata:                                  # this is a predefined key for additional metadata
     query: "select * from historical_data"   # suggested use case: query used to extract training data
     training_file: "3_train_models.py"       # suggested use case: training file used
@@ -269,11 +269,10 @@ while is_deployed == False:
   else:
     print ("Deploying Model.....")
     time.sleep(10)
-    
 
-# Change the line in the flask/single_view.html file.
-import subprocess
-subprocess.call(["sed", "-i",  's/const\saccessKey.*/const accessKey = "' + access_key + '";/', "/home/cdsw/flask/single_view.html"])
+# Set CRN for deployment
+crn_env_params = {"DEPLOYMENT_CRN":new_model_details["modelDeployment"]["crn"]}
+crn_env = cml.create_environment_variable(crn_env_params)
 
 # Create Accuracy Job
 create_calc_jobs_params = {"name": "Calculate Accuracy " + run_time_suffix,
@@ -306,7 +305,6 @@ new_calc_job = cml.create_job(create_calc_jobs_params)
 new_calc_job_id = new_calc_job["id"]
 print("Created new job with jobid", new_calc_job_id)
 
-##
 # Start the accuracy job
 job_calc_env_params = {}
 start_job_calc_params = {"environment": job_env_params}
@@ -320,6 +318,10 @@ start_job_calc_params = {"environment": job_env_params}
 job_calc_id = new_calc_job_id
 job_calc_status = cml.start_job(job_calc_id, start_job_calc_params)
 print("Accuracy Job 2 Started")
+
+# Change the line in the flask/single_view.html file.
+import subprocess
+subprocess.call(["sed", "-i",  's/const\saccessKey.*/const accessKey = "' + access_key + '";/', "/home/cdsw/flask/single_view.html"])
 
 # Create Application
 create_application_params = {

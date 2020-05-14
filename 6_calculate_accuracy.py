@@ -11,7 +11,7 @@ import numpy as np
 from scipy.stats import chisquare
 
 # Define our uqique model deployment id
-model_deployment_crn = "GET THIS FROM MODEL SCREEN IN CML"
+model_deployment_crn = os.environ["DEPLOYMENT_CRN"]
 
 current_timestamp_ms = int(round(time.time() * 1000))
 
