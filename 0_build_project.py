@@ -239,8 +239,18 @@ create_model_params = {
     "environment": {}}
 
 # Complete our YAML file
-!echo -e "\"Model Explainer $run_time_suffix\":\n"$(cat lineage.yml)" > lineage.yml
+yaml_text = \
+"""Model Explainer {}":
+  hive_table_qualified_names:                # this is a predefined key to link to training data
+    - "telco_churn.training_data@cm"         # the qualifiedName of the hive_table object representing                
+  metadata:                                  # this is a predefined key for additional metadata
+    query: "select * from historical_data"   # suggested use case: query used to extract training data
+    training_file: "3_train_models.py"       # suggested use case: training file used
+""".format(run_time_suffix)
 
+with open('lineage.yml', 'w') as lineage: lineage.write(yaml_text)
+
+# Deploy the model
 new_model_details = cml.create_model(create_model_params)
 access_key = new_model_details["accessKey"]  # todo check for bad response
 model_id = new_model_details["id"]
