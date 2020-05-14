@@ -1,8 +1,0 @@
-#NOTE: 0_build_project.py will generate this file. There's an example below:
-
-#PredictChurnv2:                           # the name of your model
-#  hive_table_qualified_names:             # this is a predefined key to link to training data
-#    - "telco_churn.training_data@cm"      # the qualifiedName of the hive_table object representing                
-#  metadata:                               # this is a predefined key for additional metadata
-#    query: "select id, name from table"   # suggested use case: query used to extract training data
-#    training_file: "3_train_models.py"    # suggested use case: training file used
