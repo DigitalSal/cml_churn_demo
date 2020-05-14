@@ -240,7 +240,7 @@ create_model_params = {
 
 # Complete our YAML file
 yaml_text = \
-"""Model Explainer {}":
+""""Model Explainer {}":
   hive_table_qualified_names:                # this is a predefined key to link to training data
     - "telco_churn.historical_data@cm"         # the qualifiedName of the hive_table object representing                
   metadata:                                  # this is a predefined key for additional metadata
