@@ -11,6 +11,8 @@ from sklearn.pipeline import Pipeline
 from sklearn.linear_model import LogisticRegressionCV
 from sklearn.pipeline import TransformerMixin
 from sklearn.preprocessing import LabelEncoder
+from sklearn.compose import ColumnTransformer
+
 from lime.lime_tabular import LimeTabularExplainer
 
 from churnexplainer import ExplainedModel,CategoricalEncoder
@@ -76,12 +78,34 @@ ce = CategoricalEncoder()
 X = ce.fit_transform(data)
 y = labels.values
 X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=42)
-ohe = OneHotEncoder(categorical_features=list(ce.cat_columns_ix_.values()),
-                    sparse=False)
-clf = LogisticRegressionCV()
-pipe = Pipeline([('ohe', ohe),
+
+ct = ColumnTransformer(
+    [('ohe', OneHotEncoder(), list(ce.cat_columns_ix_.values()))],
+    remainder='passthrough'
+)
+
+
+### Experiments options
+# If you are running this as an experiment, pass the cv, solver and max_iter values
+# as arguments in that order. e.g. `5 lbfgs 100`.
+
+if len (sys.argv) == 4:
+  try:
+    cv = int(sys.argv[1])
+    solver = str(sys.argv[2])
+    max_iter = int(sys.argv[3])
+  except:
+    sys.exit("Invalid Arguments passed to Experiment")
+else:
+    cv = 5
+    solver = 'lbfgs' # one of newton-cg, lbfgs, liblinear, sag, saga
+    max_iter = 100
+
+clf = LogisticRegressionCV(cv=cv,solver=solver,max_iter=max_iter)
+pipe = Pipeline([('ct', ct),
                  ('scaler', StandardScaler()),
                  ('clf', clf)])
+
 pipe.fit(X_train, y_train)
 train_score = pipe.score(X_train, y_train)
 test_score = pipe.score(X_test, y_test)
@@ -91,18 +115,9 @@ print(classification_report(y_test, pipe.predict(X_test)))
 data[labels.name + ' probability'] = pipe.predict_proba(X)[:, 1]
 
 
-
-
-# List of length number of features, containing names of features in order
-# in which they appear in X
+# Create LIME Explainer
 feature_names = list(ce.columns_)
-
-# List of indices of columns of X containing categorical features
 categorical_features = list(ce.cat_columns_ix_.values())
-
-# List of (index, [cat1, cat2...]) index-strings tuples, where each index
-# is that of a categorical column in X, and the list of strings are the
-# possible values it can take
 categorical_names = {i: ce.classes_[c]
                      for c, i in ce.cat_columns_ix_.items()}
 class_names = ['No ' + labels.name, labels.name]
@@ -112,11 +127,15 @@ explainer = LimeTabularExplainer(ce.transform(data),
                                  categorical_features=categorical_features,
                                  categorical_names=categorical_names)    
 
+
+# Create and save the combined Logistic Regression and LIME Explained Model.
 explainedmodel = ExplainedModel(data=data, labels=labels, model_name='telco_linear',
                                 categoricalencoder=ce, pipeline=pipe,
                                 explainer=explainer,data_dir=data_dir)
 explainedmodel.save()
 
+
+# If running as as experiment, this will 
 cdsw.track_metric("train_score",round(train_score,2))
 cdsw.track_metric("test_score",round(test_score,2))
 cdsw.track_metric("model_path",explainedmodel.model_path)

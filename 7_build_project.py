@@ -47,6 +47,10 @@ except:
 !hdfs dfs -mkdir -p $STORAGE/datalake/data/churn
 !hdfs dfs -copyFromLocal /home/cdsw/raw/WA_Fn-UseC_-Telco-Customer-Churn-.csv $STORAGE/datalake/data/churn/WA_Fn-UseC_-Telco-Customer-Churn-.csv
 
+
+### This will run the data ingest file. You need this
+exec(open("1_data_ingest.py").read())
+
 # Get User Details
 user_details = cml.get_user({})
 user_obj = {"id": user_details["id"], "username": "vdibia",
@@ -64,7 +68,7 @@ project_id = project_details["id"]
 # Create Job
 create_jobs_params = {"name": "Train Model " + run_time_suffix,
                       "type": "manual",
-                      "script": "3_train_models.py",
+                      "script": "4_train_models.py",
                       "timezone": "America/Los_Angeles",
                       "environment": {},
                       "kernel": "python3",
@@ -120,34 +124,13 @@ run_experiment_params = {
         },
         "restangularCollection": False
     },
-    "script": "3_train_models.py",
+    "script": "4_train_models.py",
     "arguments": "linear telco",
     "kernel": "python3",
     "cpu": 1,
     "memory": 2,
     "project": str(project_id)
 }
-#
-#cml.run_experiment(run_experiment_params)
-
-#{"size":{"id":1,"description":"1 vCPU / 2 GiB Memory","cpu":1,"memory":2,"route":"engine-profiles","reqParams":null,"parentResource":{"route":"site","parentResource":null},"restangularCollection":false},"script":"3_train_models.py","arguments":"linear telco","kernel":"python3","cpu":1,"memory":2,"project":"212"}
-
-run_params = {"username":"jfletcher","size":{"id":1,"description":"1 vCPU / 2 GiB Memory","cpu":1,"memory":2,"route":"engine-profiles","reqParams":"null","parentResource":{"route":"site","parentResource":"null"},"restangularCollection":"false"},"script":"3_train_models.py","arguments":"linear telco","kernel":"python3","cpu":1,"memory":2,"project":"212"}
-
-def run_experiment(params):
-    res = requests.post(
-        "http://ml-e493d729-039.demo-aws.ylcu-atmi.cloudera.site/api/altus-ds-1/ds/run",
-        headers={"Content-Type": "application/json"},
-        auth=("d06k1unrmxo9kq8gizimfn8kwa2t3xxl", ""),
-        data=json.dumps(run_params)
-    )
-    response = res.status_code
-    if (res.status_code != 201):
-        logging.error(response["message"])
-        logging.error(response)
-    else:
-        logging.debug("Experiment Run Started")
-    return response
 
 # Get Default Engine Details
 default_engine_details = cml.get_default_engine({})
@@ -163,7 +146,7 @@ create_model_params = {
     "description": "Explain a given model prediction",
     "visibility": "private",
     "enableAuth": False,
-    "targetFilePath": "4_model_serve_explainer.py",
+    "targetFilePath": "5_model_serve_explainer.py",
     "targetFunctionName": "explain",
     "engineImageId": default_engine_image_id,
     "kernel": "python3",
@@ -184,6 +167,7 @@ model_id = new_model_details["id"]
 
 print("New model created with access key", access_key)
 
+#Disable model_authentication    
 cml.set_model_auth({"id": model_id, "enableAuth": False})
 
 #Wait for the model to deploy.
@@ -198,6 +182,8 @@ while is_deployed == False:
     time.sleep(10)
     
 
+
+
 # Change the line in the flask/single_view.html file.
 import subprocess
 subprocess.call(["sed", "-i",  's/const\saccessKey.*/const accessKey = "' + access_key + '";/', "/home/cdsw/flask/single_view.html"])
@@ -208,7 +194,7 @@ create_application_params = {
     "subdomain": run_time_suffix[:],
     "description": "Explainer web application",
     "type": "manual",
-    "script": "5_application.py", "environment": {},
+    "script": "6_application.py", "environment": {},
     "kernel": "python3", "cpu": 1, "memory": 2,
     "nvidia_gpu": 0
 }
