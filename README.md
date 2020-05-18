@@ -117,7 +117,7 @@ run for that job.
 
 The other option is running an **[Experiment](https://docs.cloudera.com/machine-learning/cloud/experiments/topics/ml-running-an-experiment.html)**. Experiments run immediately and are used for testing different parameters in a model training process. In this instance it would be use for hyperparameter optimisation. To run an experiment, from the Project window click Experiments > Run Experiment with the following settings.
 * **Script** : 4_train_models.py
-* **Arguments** : 0 lbfgs 100 _(these the cv, solver and max_iter parameters to be passed to 
+* **Arguments** : 5 lbfgs 100 _(these the cv, solver and max_iter parameters to be passed to 
 LogisticRegressionCV() function)
 * **Kernel** : Python 3
 * **Engine Profile** : 1 vCPU / 2 GiB
@@ -169,6 +169,11 @@ Leave the rest unchanged. Click **Deploy Model** and the model will go through t
 process and deploy a REST endpoint. Once the model is deployed, you can test it is working 
 from the model Model Overview page.
 
+_**Note: This is important**_
+
+Once the model is deployed, you much disable the additional model authentication feature. In the model settings page, untick **Enable Authentication**.
+
+![disable_auth](images/disable_auth.png)
 
 ### 6 Deploy Application
 The final step is to deploy the Flask application. The **[Applications](https://docs.cloudera.com/machine-learning/cloud/applications/topics/ml-applications.html)** feature is still quite new for CML. For this project it is used to deploy a web based application that interacts with the underlying model created in the previous step.
