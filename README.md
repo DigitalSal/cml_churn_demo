@@ -171,7 +171,7 @@ from the model Model Overview page.
 
 _**Note: This is important**_
 
-Once the model is deployed, you much disable the additional model authentication feature. In the model settings page, untick **Enable Authentication**.
+Once the model is deployed, you must disable the additional model authentication feature. In the model settings page, untick **Enable Authentication**.
 
 ![disable_auth](images/disable_auth.png)
 
