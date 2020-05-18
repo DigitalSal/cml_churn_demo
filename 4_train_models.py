@@ -1,3 +1,6 @@
+## Model Training
+# This script is used to train the Explained Model. It can be run in a session, or as job or as an experiment.
+
 import os, datetime, subprocess, glob
 import dill
 import pandas as pd
@@ -17,13 +20,7 @@ from lime.lime_tabular import LimeTabularExplainer
 
 from churnexplainer import ExplainedModel,CategoricalEncoder
 
-data_dir = '/home/cdsw' #os.environ.get('CHURN_DATA_DIR', '/mnt/c/Users/Jeff/tmp/cml_churn_demo')
-#dataset = os.environ.get('CHURN_DATASET', 'telco')
-
-if len(glob.glob("raw/telco-data/*.csv")) == 1:
-  telco_data_path = glob.glob("raw/telco-data/*.csv")[0]
-else:
-  telco_data_path = os.path.join(data_dir, 'raw', 'WA_Fn-UseC_-Telco-Customer-Churn.csv')
+data_dir = '/home/cdsw' 
 
 idcol = 'customerID'
 labelcol = 'Churn'
@@ -58,32 +55,36 @@ spark = SparkSession\
     .master("local[*]")\
     .getOrCreate()
 
-df = spark.sql("SELECT * FROM default.telco_churn").toPandas()
 
+# This is a fail safe incase the hive table did not get created in the last step.
+try:
+  if (spark.sql("SELECT count(*) FROM default.telco_churn").collect()[0][0] > 0):
+    df = spark.sql("SELECT * FROM default.telco_churn").toPandas()
+except:
+  print("Hive table has not been created")
+  df = pd.read_csv(os.path.join(data_dir, 'raw', 'WA_Fn-UseC_-Telco-Customer-Churn.csv'))
 
-#df = pd.read_csv(telco_data_path)
+# Clean and shape the data from lr and LIME
 df = df.replace(r'^\s$', np.nan, regex=True).dropna().reset_index()
 df.index.name = 'id'
 data, labels = df.drop(labelcol, axis=1), df[labelcol]
 data = data.replace({'SeniorCitizen': {1: 'Yes', 0: 'No'}})
+# This is Mike's lovely short hand syntax for looping through data and doing useful things. I think if we started to pay him by the ASCII char, we'd get more readable code. 
 data = data[[c for c, _ in cols]]
-
 catcols = (c for c, iscat in cols if iscat)
 for col in catcols:
     data[col] = pd.Categorical(data[col])
 labels = (labels == 'Yes')
 
-
+# Prepare the pipeline and split the data for model training
 ce = CategoricalEncoder()
 X = ce.fit_transform(data)
 y = labels.values
 X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=42)
-
 ct = ColumnTransformer(
     [('ohe', OneHotEncoder(), list(ce.cat_columns_ix_.values()))],
     remainder='passthrough'
 )
-
 
 ### Experiments options
 # If you are running this as an experiment, pass the cv, solver and max_iter values
@@ -106,6 +107,7 @@ pipe = Pipeline([('ct', ct),
                  ('scaler', StandardScaler()),
                  ('clf', clf)])
 
+# The magical model.fit()
 pipe.fit(X_train, y_train)
 train_score = pipe.score(X_train, y_train)
 test_score = pipe.score(X_test, y_test)
@@ -135,7 +137,7 @@ explainedmodel = ExplainedModel(data=data, labels=labels, model_name='telco_line
 explainedmodel.save()
 
 
-# If running as as experiment, this will 
+# If running as as experiment, this will track the metrics and add the model trained in this training run to the experiment history.
 cdsw.track_metric("train_score",round(train_score,2))
 cdsw.track_metric("test_score",round(test_score,2))
 cdsw.track_metric("model_path",explainedmodel.model_path)
