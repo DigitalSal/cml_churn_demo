@@ -11,7 +11,6 @@ spark = SparkSession\
     .getOrCreate()
 
 # Add the following config if you want to run on the k8s cluster and remove `local[*]`
-#    .config("spark.hadoop.fs.s3a.s3guard.ddb.region","us-east-1")\
 #    .config("spark.yarn.access.hadoopFileSystems","s3a://demo-aws-2//")\
     
 
