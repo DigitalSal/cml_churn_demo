@@ -1,5 +1,6 @@
 ## Data Ingest
-# This script grabs the CSV file from the Cloud Storage location set in step 0 into a Spark DataFrame. Its adds schema and then writes the dataframe to a hive table.
+# This script grabs the CSV file from the Cloud Storage location set in step 0 into a Spark DataFrame. Its adds schema and then 
+# writes the dataframe to a hive table.
 
 import os
 import sys
@@ -14,7 +15,8 @@ spark = SparkSession\
 # Add the following config if you want to run on the k8s cluster and remove `local[*]`
 #    .config("spark.yarn.access.hadoopFileSystems","s3a://demo-aws-2//")\
     
-# Since we know the data already, we can add schema upfront. This is good practice as Spark will read *all* the Data if you try infer the schema.
+# Since we know the data already, we can add schema upfront. This is good practice as Spark will read *all* the Data if you try infer
+# the schema.
 
 schema = StructType(
   [
@@ -82,3 +84,6 @@ if ('telco_churn' not in list(spark.sql("show tables in default").toPandas()['ta
 
 # Show the data in the hive table
 spark.sql("select * from default.telco_churn").show()
+
+# To get detailed information about the hive table run.
+spark.sql("describe formatted default.telco_churn").toPandas()
