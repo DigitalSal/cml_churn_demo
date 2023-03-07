@@ -202,7 +202,7 @@ explainer = LimeTabularExplainer(
 )
 
 # Create and save the combined Logistic Regression and LIME Explained Model.
-explainedmodel = ExplainedModel(data=data, labels=labels, model_name='telco_linear',
-                                categoricalencoder=ce, pipeline=pipe,
+explainedmodel = ExplainedModel(data=datadf, labels=labels, model_name='telco_linear',
+                                categoricalencoder=ce, pipeline=svc_pipe,
                                 explainer=explainer,data_dir=data_dir)
 explainedmodel.save()
